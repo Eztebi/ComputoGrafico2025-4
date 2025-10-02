@@ -11,6 +11,14 @@
 *.gch
 *.pch
 
+*.ipch
+
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -30,3 +38,16 @@
 *.exe
 *.out
 *.app
+
+# debug information files
+*.dwo
+
+# Visual studio cache
+.vs
+
+#visual studio out directories
+**/x64/
+
+**/v17/
+
+**/FileContentIndex/
