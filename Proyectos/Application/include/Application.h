@@ -15,5 +15,5 @@ private:
 		(-1.0f, -1.0f, 0.0f, 1.0f), //vertice 2
 		(1.0f, -1.0, 0.0f, 1.0f) //vertice 3
 	};
-	std::map<std::string, GLuint> ids;
+	std::map<std::string, GLuint> ids;          
 };
