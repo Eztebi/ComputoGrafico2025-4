@@ -1,0 +1,4 @@
+C:/Users/Estudiantes/ComputoGrafico2025-4/ComputoGrafico2025-4/Libs/glfw/CMakeFiles/ALL_BUILD.dir
+C:/Users/Estudiantes/ComputoGrafico2025-4/ComputoGrafico2025-4/Libs/glfw/CMakeFiles/ZERO_CHECK.dir
+C:/Users/Estudiantes/ComputoGrafico2025-4/ComputoGrafico2025-4/Libs/glfw/src/CMakeFiles/glfw.dir
+C:/Users/Estudiantes/ComputoGrafico2025-4/ComputoGrafico2025-4/Libs/glfw/src/CMakeFiles/update_mappings.dir

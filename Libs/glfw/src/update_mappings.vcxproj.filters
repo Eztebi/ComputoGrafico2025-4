@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Estudiantes\ComputoGrafico2025-4\ComputoGrafico2025-4\Libs\glfw\CMakeFiles\ee543dff56aebee015562206b9a80b07\update_mappings.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Estudiantes\ComputoGrafico2025-4\ComputoGrafico2025-4\Libs\glfw\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\Estudiantes\ComputoGrafico2025-4\ComputoGrafico2025-4\Libs\glfw\src\mappings.h.in">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="C:\Users\Estudiantes\ComputoGrafico2025-4\ComputoGrafico2025-4\Libs\glfw\CMake\GenerateMappings.cmake" />
+    <None Include="C:\Users\Estudiantes\ComputoGrafico2025-4\ComputoGrafico2025-4\Libs\glfw\src\CMakeFiles\update_mappings" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{AB17D697-D678-3B16-9F5E-6F99B6A07921}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{84439B43-F518-3E61-A408-B13C290F104B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

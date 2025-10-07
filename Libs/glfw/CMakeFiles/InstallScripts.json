@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/Estudiantes/ComputoGrafico2025-4/ComputoGrafico2025-4/Libs/glfw/cmake_install.cmake",
+		"C:/Users/Estudiantes/ComputoGrafico2025-4/ComputoGrafico2025-4/Libs/glfw/src/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
