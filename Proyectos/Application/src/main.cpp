@@ -27,6 +27,7 @@ int main(void)
     }
 
     app.setup();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -34,13 +35,15 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        /* Poll for and process events */
+        glfwPollEvents();
+        
+        app.update();
+
+        app.draw();
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
-        glfwPollEvents();
-        app.draw();
-        app.update();
     }
 
     glfwTerminate();
