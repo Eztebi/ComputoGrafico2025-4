@@ -1,8 +1,9 @@
 #version 460 core
 
+in vec4 vertexColor;
 out vec4 outColor;
 
 void main()
 {
-	outColor = vec4(1.0f,0.0f,0.0f,1.0f); //equivale a hacer return 
+	outColor = vertexColor; //equivale a hacer return 
 }

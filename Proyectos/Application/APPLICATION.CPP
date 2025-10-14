@@ -10,23 +10,35 @@ void Application::setup()
 
 void Application::update()
 {
-	std::cout << "update" << std::endl;
+	time += 0.001f;
 }
 
 void Application::draw()
 {
 	//selecciona programa de shaders
 	glUseProgram(ids["program"]);
-
+	//Pasa los parametros del programa. Los Asocia del cpu al gpu
+	glUniform1f(ids["time"], time);
 	//selecciona geometria (triangulo)
 	glBindVertexArray(ids["triangle"]);
 
 	//gl_draw
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 void Application::SetUpGeometria()
 {
+	std::vector<float> geometry{
+		//x      y     z     w
+		-1.0f, -1.0f, 0.0f, 1.0f, //vertice 1
+		-1.0f , 1.0f ,0.0f, 1.0f, //vertice 2
+		1.0f, -1.0, 0.0f, 1.0f, //vertice 3
+		1.0f, 1.0f, 0.0f, 1.0f, //vertice 4
+		1.0f , 0.0f ,0.0f, 1.0f, // v1 Rojo
+		0.0f , 1.0f ,0.0f, 1.0f,  // v2 verde
+		0.0f , 0.0f ,1.0f, 1.0f,  // v3 azul
+		1.0f , 1.0f ,1.0f, 1.0f,  // v4 blanco
+	};
 	//crear vertex array object
 	GLuint VAO, VBO;
 	glGenVertexArrays(1, &VAO);
@@ -41,12 +53,18 @@ void Application::SetUpGeometria()
 
 	//PASA arreglo de vertices
 	glBufferData(GL_ARRAY_BUFFER,
-		sizeof(GLfloat) * geometry.size(),
+		sizeof(GLfloat) * geometry.size(), //calculo de tamaño en bytes
 		&geometry[0],
-		GL_STATIC_DRAW);
+		GL_STATIC_DRAW); //Manda la geometria al buffer
 
+	//glVertexAtrubvPointer sirve para decirle como va a leer la geometria
+	//para vertices
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
+
+	//para color
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(15 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	std::cout << "setup" << std::endl;
 }
@@ -56,6 +74,7 @@ void Application::SetUpProgamaShaders()
 	std::string strVertexShader = leer_archivo_a_string("C:/Users/Estudiante/Estebo-17744/ComputoGrafico2025-4/Proyectos/Application/Shaders/VertexShader.glsl");
 	std::string strFragmentShader = leer_archivo_a_string("C:/Users/Estudiante/Estebo-17744/ComputoGrafico2025-4/Proyectos/Application/Shaders/FragmentShader.glsl");
 	ids["program"] = ShaderFuncs::InitializeProgram(strVertexShader, strFragmentShader);
+	ids["time"] = glGetUniformLocation(ids["program"], "time");
 }
 
 std::string Application::leer_archivo_a_string(const std::string& ruta_archivo) {
