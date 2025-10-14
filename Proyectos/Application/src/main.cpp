@@ -38,6 +38,10 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
         
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        }
+
         app.update();
 
         app.draw();

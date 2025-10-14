@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "ShaderFuncs.h"
+#include <GLFW/glfw3.h>
 
 void Application::setup()
 {
