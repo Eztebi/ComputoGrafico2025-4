@@ -6,20 +6,28 @@ void Application::setup()
 {
 	SetUpGeometria();
 	SetUpProgamaShaders();
+	SetUpProgamaCamera();
+	projection = glm::perspective(45.0f, 1024.0f / 768.0f, 0.1f, 100.0f);
 	
 }
 
 void Application::update()
 {
 	time += 0.001f;
+	eye = glm::vec3(0.0f, 0.0f, 2.0f + cos(time));
+	camera = glm::lookAt(eye, center, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void Application::draw()
 {
 	//selecciona programa de shaders
-	glUseProgram(ids["program"]);
+	glUseProgram(ids["program2"]);
 	//Pasa los parametros del programa. Los Asocia del cpu al gpu
-	glUniform1f(ids["time"], time);
+	glUniform1f(ids["time2"], time);
+	//glad_glProgramUniformMatrix4fv(ids["camera"], 1,GL_FALSE, &camera[0][0]);
+	//glad_glProgramUniformMatrix4fv(ids["projection"], 1,GL_FALSE, &projection[0][0]);
+	glUniform1f(ids["xPos"], xPos);
+	glUniform1f(ids["yPos"], yPos);
 	//selecciona geometria (triangulo)
 	glBindVertexArray(ids["triangle"]);
 
@@ -72,12 +80,24 @@ void Application::SetUpGeometria()
 
 void Application::SetUpProgamaShaders()
 {
-	std::string strVertexShader = leer_archivo_a_string("C:/Users/Estudiante/Estebo-17744/ComputoGrafico2025-4/Proyectos/Application/Shaders/VertexShader.glsl");
-	std::string strFragmentShader = leer_archivo_a_string("C:/Users/Estudiante/Estebo-17744/ComputoGrafico2025-4/Proyectos/Application/Shaders/FragmentShader.glsl");
-	ids["program"] = ShaderFuncs::InitializeProgram(strVertexShader, strFragmentShader);
-	ids["time"] = glGetUniformLocation(ids["program"], "time");
+	std::string strVertexShader = leer_archivo_a_string("Shaders/VertexShader.glsl");
+	std::string strFragmentShader = leer_archivo_a_string("Shaders/FragmentShader.glsl");
+	ids["program1"] = ShaderFuncs::InitializeProgram(strVertexShader, strFragmentShader);
+	ids["time1"] = glGetUniformLocation(ids["program1"], "time");
+	ids["xPos"] = glGetUniformLocation(ids["program1"], "xPos");
+	ids["yPos"] = glGetUniformLocation(ids["program1"], "yPos");
 }
-
+void Application::SetUpProgamaCamera() {
+	std::string strVertexShader = leer_archivo_a_string("Shaders/VertexCamera.glsl");
+	std::string strFragmentShader = leer_archivo_a_string("Shaders/FragmentCamera.glsl");
+	ids["program2"] = ShaderFuncs::InitializeProgram(strVertexShader, strFragmentShader);
+	ids["time2"] = glGetUniformLocation(ids["program2"], "time");
+	ids["projection"] = glGetUniformLocation(ids["program2"], "projection");
+	ids["camera"] = glGetUniformLocation(ids["program2"], "camera");
+}
+void Application::SetUpCube()
+{
+}
 std::string Application::leer_archivo_a_string(const std::string& ruta_archivo) {
 	// 1. Abrir el archivo
 	// std::ios::in es para modo de entrada (lectura)
@@ -100,4 +120,23 @@ std::string Application::leer_archivo_a_string(const std::string& ruta_archivo) 
 
 	// 5. Devolver el string resultante
 	return ss.str();
+}
+
+void Application::keyCallbalck(int key, int scancode, int action, int nods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+
+	if (key == GLFW_KEY_A && action == GLFW_REPEAT)
+		xPos -= 0.01f;
+
+	if (key == GLFW_KEY_D && action == GLFW_REPEAT)
+		xPos += 0.01f;
+
+	if (key == GLFW_KEY_W && action == GLFW_REPEAT)
+		yPos += 0.01f;
+
+	if (key == GLFW_KEY_S && action == GLFW_REPEAT)
+		yPos -= 0.01f;
+	
 }
