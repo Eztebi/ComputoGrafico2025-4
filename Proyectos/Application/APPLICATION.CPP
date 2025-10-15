@@ -21,13 +21,16 @@ void Application::update()
 void Application::draw()
 {
 	//selecciona programa de shaders
-	glUseProgram(ids["program2"]);
+	glUseProgram(ids["program1"]);
+	//glUseProgram(ids["program2"]);
 	//Pasa los parametros del programa. Los Asocia del cpu al gpu
 	glUniform1f(ids["time2"], time);
 	//glad_glProgramUniformMatrix4fv(ids["camera"], 1,GL_FALSE, &camera[0][0]);
 	//glad_glProgramUniformMatrix4fv(ids["projection"], 1,GL_FALSE, &projection[0][0]);
 	glUniform1f(ids["xPos"], xPos);
 	glUniform1f(ids["yPos"], yPos);
+	glUniform1f(ids["xRot"], xRot);
+	glUniform1f(ids["yRot"], yRot);
 	//selecciona geometria (triangulo)
 	glBindVertexArray(ids["triangle"]);
 
@@ -39,14 +42,71 @@ void Application::SetUpGeometria()
 {
 	std::vector<float> geometry{
 		//x      y     z     w
-		-1.0f, -1.0f, 0.0f, 1.0f, //vertice 1
-		-1.0f , 1.0f ,0.0f, 1.0f, //vertice 2
-		1.0f, -1.0, 0.0f, 1.0f, //vertice 3
-		1.0f, 1.0f, 0.0f, 1.0f, //vertice 4
-		1.0f , 0.0f ,0.0f, 1.0f, // v1 Rojo
-		0.0f , 1.0f ,0.0f, 1.0f,  // v2 verde
-		0.0f , 0.0f ,1.0f, 1.0f,  // v3 azul
-		1.0f , 1.0f ,1.0f, 1.0f,  // v4 blanco
+		// Frente 
+		-1.0f, -1.0f,  1.0f, 1.0f,
+		-1.0f,  1.0f,  1.0f, 1.0f,
+		1.0f, -1.0f,  1.0f, 1.0f,
+		1.0f,  1.0f,  1.0f, 1.0f,
+		//rojo
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		
+		//atras
+		1.0f, -1.0f, -1.0f, 1.0f,
+		1.0f,  1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, -1.0f, 1.0f,
+		1.0f,  1.0f, -1.0f, 1.0f,
+		//blanco
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+
+		//Derecha 
+	    1.0f, -1.0f, -1.0f, 1.0f,
+	    1.0f,  1.0f, -1.0f, 1.0f,
+	    1.0f, -1.0f,  1.0f, 1.0f,
+	    1.0f,  1.0f,  1.0f, 1.0f,
+	    //verde
+	    0.0f, 1.0f, 0.0f, 1.0f,
+	    0.0f, 1.0f, 0.0f, 1.0f,
+	    0.0f, 1.0f, 0.0f, 1.0f,
+	    0.0f, 1.0f, 0.0f, 1.0f,
+	
+	    //Izquierda 
+	    -1.0f, -1.0f, -1.0f, 1.0f,
+	    -1.0f,  1.0f, -1.0f, 1.0f,
+	    -1.0f, -1.0f,  1.0f, 1.0f,
+	    -1.0f,  1.0f,  1.0f, 1.0f,
+	    //azul
+	    0.0f, 0.0f, 1.0f, 1.0f,
+	    0.0f, 0.0f, 1.0f, 1.0f,
+	    0.0f, 0.0f, 1.0f, 1.0f,
+	    0.0f, 0.0f, 1.0f, 1.0f,
+	
+	    // Arriba
+	    -1.0f,  1.0f, -1.0f, 1.0f,
+	    -1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f,  1.0f, -1.0f, 1.0f,
+		 1.0f,  1.0f,  0.0f, 1.0f,
+		 //naranja
+		 1.0f, 0.5f, 0.0f, 1.0f,
+		 1.0f, 0.5f, 0.0f, 1.0f,
+		 1.0f, 0.5f, 0.0f, 1.0f,
+		 1.0f, 0.5f, 0.0f, 1.0f,
+	
+	   	 // Abajo 
+		 -1.0f, -1.0f, 0.0f, 1.0f,
+		 -1.0f, -1.0f, -1.0f, 1.0f,
+		  1.0f, -1.0f, -1.0f, 1.0f,
+		  1.0f, -1.0f,  0.0f, 1.0f,
+		  //amarillo
+		  1.0f, 1.0f, 0.0f, 1.0f,
+		  1.0f, 1.0f, 0.0f, 1.0f,
+		  1.0f, 1.0f, 0.0f, 1.0f,
+		  1.0f, 1.0f, 0.0f, 1.0f
 	};
 	//crear vertex array object
 	GLuint VAO, VBO;
@@ -86,6 +146,8 @@ void Application::SetUpProgamaShaders()
 	ids["time1"] = glGetUniformLocation(ids["program1"], "time");
 	ids["xPos"] = glGetUniformLocation(ids["program1"], "xPos");
 	ids["yPos"] = glGetUniformLocation(ids["program1"], "yPos");
+	ids["xRot"] = glGetUniformLocation(ids["program1"], "xRot");
+	ids["yRot"] = glGetUniformLocation(ids["program1"], "yRot");
 }
 void Application::SetUpProgamaCamera() {
 	std::string strVertexShader = leer_archivo_a_string("Shaders/VertexCamera.glsl");
@@ -127,16 +189,31 @@ void Application::keyCallbalck(int key, int scancode, int action, int nods)
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	//Traslacion
+	//A
 	if (key == GLFW_KEY_A && action == GLFW_REPEAT)
 		xPos -= 0.01f;
-
+	//D
 	if (key == GLFW_KEY_D && action == GLFW_REPEAT)
 		xPos += 0.01f;
-
+	//W
 	if (key == GLFW_KEY_W && action == GLFW_REPEAT)
 		yPos += 0.01f;
-
+	//S
 	if (key == GLFW_KEY_S && action == GLFW_REPEAT)
 		yPos -= 0.01f;
-	
+
+	//Rotacion
+	//UP
+	if (key == GLFW_KEY_UP && action == GLFW_REPEAT)
+		yRot += 0.01f;
+	//DOWN
+	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT)
+		yRot -= 0.01f;
+	//LEFT
+	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT)
+		xRot -= 0.01f;
+	//RIGHT
+	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT)
+		xRot += 0.01f;
 }

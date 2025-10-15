@@ -30,5 +30,7 @@ private:
 	float time{ 0.0f };
 	float xPos{ 0.0f };
 	float yPos{ 0.0f };
+	float xRot{ 0.0f };
+	float yRot{ 0.0f };
 	std::map<std::string, GLuint> ids;          
 };
