@@ -8,25 +8,35 @@ void Application::setup()
 	SetUpProgamaShaders();
 	SetUpProgamaCamera();
 	projection = glm::perspective(45.0f, 1024.0f / 768.0f, 0.1f, 100.0f);
-	
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Application::update()
 {
-	time += 0.001f;
-	eye = glm::vec3(0.0f, 0.0f, 2.0f + cos(time));
+	time += 0.3f;
+	eye = glm::vec3(0.0f, 0.0f, 5.0f);
+	center = glm::vec3(0.0f, 0.0f, 0.0f);
 	camera = glm::lookAt(eye, center, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),glm::radians(time),glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),glm::radians(time),glm::vec3(0.0f, 1.0f, 0.0f));
+
+	model = rotateX * rotateY * translate * scale;
 }
 
 void Application::draw()
 {
 	//selecciona programa de shaders
-	glUseProgram(ids["program1"]);
-	//glUseProgram(ids["program2"]);
+	//glUseProgram(ids["program1"]);
+	glUseProgram(ids["program2"]);
 	//Pasa los parametros del programa. Los Asocia del cpu al gpu
 	glUniform1f(ids["time2"], time);
-	//glad_glProgramUniformMatrix4fv(ids["camera"], 1,GL_FALSE, &camera[0][0]);
-	//glad_glProgramUniformMatrix4fv(ids["projection"], 1,GL_FALSE, &projection[0][0]);
+	glUniformMatrix4fv(ids["model"], 1,GL_FALSE, &model[0][0]);
+	glUniformMatrix4fv(ids["camera"], 1,GL_FALSE, &camera[0][0]);
+	glUniformMatrix4fv(ids["projection"], 1,GL_FALSE, &projection[0][0]);
+	
 	glUniform1f(ids["xPos"], xPos);
 	glUniform1f(ids["yPos"], yPos);
 	glUniform1f(ids["xRot"], xRot);
@@ -35,75 +45,120 @@ void Application::draw()
 	glBindVertexArray(ids["triangle"]);
 
 	//gl_draw
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 void Application::SetUpGeometria()
 {
 	std::vector<float> geometry{
 		//x      y     z     w
-		// Frente 
+		// vertices
+		//v1 Frente T1
+		-1.0f,  1.0f,  1.0f, 1.0f,
 		-1.0f, -1.0f,  1.0f, 1.0f,
+		1.0f, -1.0f,  1.0f, 1.0f,
+		//v1 frente T2
 		-1.0f,  1.0f,  1.0f, 1.0f,
 		1.0f, -1.0f,  1.0f, 1.0f,
-		1.0f,  1.0f,  1.0f, 1.0f,
-		//rojo
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 1.0f,  1.0f, 1.0f,
+
+		//v2 atras T1
+		-1.0f,  1.0f,  -1.0f, 1.0f,
+		-1.0f, -1.0f,  -1.0f, 1.0f,
+		1.0f, -1.0f,  -1.0f, 1.0f,
+		//v2 atras T2
+		-1.0f,  1.0f,  -1.0f, 1.0f,
+		1.0f, -1.0f,  -1.0f, 1.0f,
+		1.0f, 1.0f,  -1.0f, 1.0f,
+
+		//v3 Derecha T1
+	    1.0f, 1.0f, 1.0f, 1.0f,
+	    1.0f,  -1.0f, 1.0f, 1.0f,
+	    1.0f, -1.0f,  -1.0f, 1.0f,
+		//v3 DERECHA T2
+	    1.0f, 1.0f, 1.0f, 1.0f,
+	    1.0f, -1.0f,  -1.0f, 1.0f,
+	    1.0f, 1.0f,  -1.0f, 1.0f,
 		
-		//atras
-		1.0f, -1.0f, -1.0f, 1.0f,
-		1.0f,  1.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, -1.0f, 1.0f,
-		1.0f,  1.0f, -1.0f, 1.0f,
-		//blanco
-		1.0f, 1.0f, 1.0f, 1.0f,
+	    //v4 Izquierda t1
+		-1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f,  -1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f,  -1.0f, 1.0f,
+		//v4 Izquierda T2
+		-1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f,  -1.0f, 1.0f,
+		-1.0f, 1.0f,  -1.0f, 1.0f,
+
+	    //v5 Arriba t1
+	    -1.0f,  1.0f, 1.0f, 1.0f,
+	    1.0f,  1.0f,  1.0f, 1.0f,
+		 1.0f,  1.0f, -1.0f, 1.0f,
+		 //v5 arriba t2
+	    -1.0f,  1.0f, 1.0f, 1.0f,
+		 1.0f,  1.0f, -1.0f, 1.0f,
+		 -1.0f,  1.0f, -1.0f, 1.0f,
+
+
+	   	 //v6 Abajo t1
+		-1.0f,  -1.0f, 1.0f, 1.0f,
+		1.0f,  -1.0f,  1.0f, 1.0f,
+		 1.0f,  -1.0f, -1.0f, 1.0f,
+		 //v6 abajo t2
+		-1.0f,  -1.0f, 1.0f, 1.0f,
+		 1.0f,  -1.0f, -1.0f, 1.0f,
+		 -1.0f,  -1.0f, -1.0f, 1.0f,
+		
+		//colores
+		//V1 rojo
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+
+		//v2blanco
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 
-		//Derecha 
-	    1.0f, -1.0f, -1.0f, 1.0f,
-	    1.0f,  1.0f, -1.0f, 1.0f,
-	    1.0f, -1.0f,  1.0f, 1.0f,
-	    1.0f,  1.0f,  1.0f, 1.0f,
-	    //verde
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+
+	    //v3 verde
 	    0.0f, 1.0f, 0.0f, 1.0f,
 	    0.0f, 1.0f, 0.0f, 1.0f,
 	    0.0f, 1.0f, 0.0f, 1.0f,
+		
 	    0.0f, 1.0f, 0.0f, 1.0f,
-	
-	    //Izquierda 
-	    -1.0f, -1.0f, -1.0f, 1.0f,
-	    -1.0f,  1.0f, -1.0f, 1.0f,
-	    -1.0f, -1.0f,  1.0f, 1.0f,
-	    -1.0f,  1.0f,  1.0f, 1.0f,
-	    //azul
+	    0.0f, 1.0f, 0.0f, 1.0f,
+	    0.0f, 1.0f, 0.0f, 1.0f,
+	    
+		//v4 azul
 	    0.0f, 0.0f, 1.0f, 1.0f,
 	    0.0f, 0.0f, 1.0f, 1.0f,
 	    0.0f, 0.0f, 1.0f, 1.0f,
+	    
+		0.0f, 0.0f, 1.0f, 1.0f,
 	    0.0f, 0.0f, 1.0f, 1.0f,
-	
-	    // Arriba
-	    -1.0f,  1.0f, -1.0f, 1.0f,
-	    -1.0f,  1.0f,  0.0f, 1.0f,
-		 1.0f,  1.0f, -1.0f, 1.0f,
-		 1.0f,  1.0f,  0.0f, 1.0f,
-		 //naranja
+	    0.0f, 0.0f, 1.0f, 1.0f,
+		
+		//v5 naranja
 		 1.0f, 0.5f, 0.0f, 1.0f,
 		 1.0f, 0.5f, 0.0f, 1.0f,
 		 1.0f, 0.5f, 0.0f, 1.0f,
+		
 		 1.0f, 0.5f, 0.0f, 1.0f,
-	
-	   	 // Abajo 
-		 -1.0f, -1.0f, 0.0f, 1.0f,
-		 -1.0f, -1.0f, -1.0f, 1.0f,
-		  1.0f, -1.0f, -1.0f, 1.0f,
-		  1.0f, -1.0f,  0.0f, 1.0f,
-		  //amarillo
+		 1.0f, 0.5f, 0.0f, 1.0f,
+		 1.0f, 0.5f, 0.0f, 1.0f,
+		 
+		//v6 amarillo
 		  1.0f, 1.0f, 0.0f, 1.0f,
+		  1.0f, 1.0f, 0.0f, 1.0f,
+		  1.0f, 1.0f, 0.0f, 1.0f,
+		  
 		  1.0f, 1.0f, 0.0f, 1.0f,
 		  1.0f, 1.0f, 0.0f, 1.0f,
 		  1.0f, 1.0f, 0.0f, 1.0f
@@ -132,7 +187,7 @@ void Application::SetUpGeometria()
 	glEnableVertexAttribArray(0);
 
 	//para color
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(15 * sizeof(float)));
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(144 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	std::cout << "setup" << std::endl;
@@ -154,8 +209,13 @@ void Application::SetUpProgamaCamera() {
 	std::string strFragmentShader = leer_archivo_a_string("Shaders/FragmentCamera.glsl");
 	ids["program2"] = ShaderFuncs::InitializeProgram(strVertexShader, strFragmentShader);
 	ids["time2"] = glGetUniformLocation(ids["program2"], "time");
+	ids["model"] = glGetUniformLocation(ids["program2"], "model");
 	ids["projection"] = glGetUniformLocation(ids["program2"], "projection");
 	ids["camera"] = glGetUniformLocation(ids["program2"], "camera");
+	ids["xPos"] = glGetUniformLocation(ids["program1"], "xPos");
+	ids["yPos"] = glGetUniformLocation(ids["program1"], "yPos");
+	ids["xRot"] = glGetUniformLocation(ids["program1"], "xRot");
+	ids["yRot"] = glGetUniformLocation(ids["program1"], "yRot");
 }
 void Application::SetUpCube()
 {
@@ -184,7 +244,7 @@ std::string Application::leer_archivo_a_string(const std::string& ruta_archivo) 
 	return ss.str();
 }
 
-void Application::keyCallbalck(int key, int scancode, int action, int nods)
+void Application::keyCallback(int key, int scancode, int action, int nods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -216,4 +276,9 @@ void Application::keyCallbalck(int key, int scancode, int action, int nods)
 	//RIGHT
 	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT)
 		xRot += 0.01f;
+}
+
+void Application::mouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	glfwGetCursorPos(window, &xMouseRot, &yMouseRot);
 }

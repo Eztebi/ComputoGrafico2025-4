@@ -4,9 +4,16 @@
 
 Application app;
 
-void MiCallback(GLFWwindow* window, int key, int scancode, int action,int nods) {
-    app.keyCallbalck(key, scancode, action, nods);
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action,int nods) {
+    app.keyCallback(key, scancode, action, nods);
 }
+void CursorCallback() {
+
+}
+void ScrollCallback() {
+
+}
+
 
 int main(void)
 {
@@ -34,15 +41,16 @@ int main(void)
 
     app.setup();
 
-    glfwSetKeyCallback(app.window, MiCallback);
-
+    glfwSetKeyCallback(app.window, KeyCallback);
+    //glfwSetMouseButtonCallback(app.window,)
+    //glfwSetScrollCallback()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(app.window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /* Poll for and process events */
         glfwPollEvents();

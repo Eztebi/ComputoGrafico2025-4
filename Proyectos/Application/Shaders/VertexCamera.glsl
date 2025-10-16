@@ -8,11 +8,12 @@ uniform float time;
 uniform float xPos;
 uniform mat4 camera;
 uniform mat4 projection;
+uniform mat4 model;
 
 void main()
 {
 	vertexColor = vColor;
-	vec4 newPosition = projection * camera * vPosition;
+	vec4 newPosition = projection * camera * model * vPosition ;
 
 	gl_Position = newPosition; //equivale a hacer return gl_Position
 }
