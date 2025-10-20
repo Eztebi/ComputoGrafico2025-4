@@ -27,7 +27,8 @@ public:
 	static std::string leer_archivo_a_string(const std::string& ruta_archivo);
 	GLFWwindow* window;
 	void keyCallback(int key, int scancode, int action, int nods);
-	void mouseCallback(GLFWwindow* window, double xpos, double ypos);
+	void cursorCallback( double xpos, double ypos);
+	void scrollCallback(double yoffset);
 private:
 	float time{ 0.0f };
 	float xPos{ 0.0f };
@@ -36,5 +37,7 @@ private:
 	float yRot{ 0.0f };
 	double xMouseRot{ 0.0f };
 	double yMouseRot{ 0.0f };
+	float zOffset = 0.0f;
+
 	std::map<std::string, GLuint> ids;          
 };

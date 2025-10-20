@@ -7,11 +7,11 @@ Application app;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action,int nods) {
     app.keyCallback(key, scancode, action, nods);
 }
-void CursorCallback() {
-
+void CursorCallback(GLFWwindow* window, double xpos, double ypos) {
+    app.cursorCallback(xpos, ypos);
 }
-void ScrollCallback() {
-
+void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    app.scrollCallback(yoffset); // solo nos interesa el eje Y del scroll
 }
 
 
@@ -42,7 +42,10 @@ int main(void)
     app.setup();
 
     glfwSetKeyCallback(app.window, KeyCallback);
-    //glfwSetMouseButtonCallback(app.window,)
+    glfwSetCursorPosCallback(app.window, CursorCallback);
+    glfwSetScrollCallback(app.window, ScrollCallback);
+    glfwSetInputMode(app.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
     //glfwSetScrollCallback()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 

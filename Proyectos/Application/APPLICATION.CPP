@@ -13,15 +13,15 @@ void Application::setup()
 
 void Application::update()
 {
-	time += 0.3f;
+	//time += 0.1f;
 	eye = glm::vec3(0.0f, 0.0f, 5.0f);
 	center = glm::vec3(0.0f, 0.0f, 0.0f);
 	camera = glm::lookAt(eye, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),glm::radians(time),glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),glm::radians(time),glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, (float)zOffset));
+	glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),glm::radians(xRot),glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),glm::radians(yRot),glm::vec3(0.0f, 1.0f, 0.0f));
 
 	model = rotateX * rotateY * translate * scale;
 }
@@ -277,8 +277,25 @@ void Application::keyCallback(int key, int scancode, int action, int nods)
 	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT)
 		xRot += 0.01f;
 }
-
-void Application::mouseCallback(GLFWwindow* window, double xpos, double ypos)
+double deltaX;
+double deltaY;
+void Application::cursorCallback(double xpos, double ypos)
 {
-	glfwGetCursorPos(window, &xMouseRot, &yMouseRot);
+	static double lastX = xpos;
+	static double lastY = ypos;
+
+	float sensitivity = 0.1f;
+
+	float deltaX = xpos - lastX;
+	float deltaY = ypos - lastY;
+
+	yRot += deltaX * sensitivity;
+	xRot += deltaY * sensitivity;
+
+	lastX = xpos;
+	lastY = ypos;
+}
+void Application::scrollCallback(double yoffset)
+{
+	zOffset += yoffset * 0.5f; 
 }
