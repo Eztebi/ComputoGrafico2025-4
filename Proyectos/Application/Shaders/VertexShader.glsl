@@ -9,6 +9,7 @@ uniform float xPos;
 uniform float yPos;
 uniform float xRot;
 uniform float yRot;
+
 void main()
 {
 	vertexColor = vColor;

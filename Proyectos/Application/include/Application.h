@@ -15,10 +15,10 @@ public:
 	void setup();
 	void update();
 	void draw();
-	void SetUpGeometria();
 	void SetUpProgamaShaders();
 	void SetUpProgamaCamera();
 	void SetUpCube();
+	void SetUpTriangle();
 	glm::mat4 camera;
 	glm::mat4 projection;
 	glm::mat4 model;
@@ -29,6 +29,7 @@ public:
 	void keyCallback(int key, int scancode, int action, int nods);
 	void cursorCallback( double xpos, double ypos);
 	void scrollCallback(double yoffset);
+	
 private:
 	float time{ 0.0f };
 	float xPos{ 0.0f };
@@ -37,7 +38,12 @@ private:
 	float yRot{ 0.0f };
 	double xMouseRot{ 0.0f };
 	double yMouseRot{ 0.0f };
-	float zOffset = 0.0f;
+	float zPosCamera = 10.f;
+	double xCursorPos = { 0.0f };
+	double yCursorPos = { 0.0f };
 
-	std::map<std::string, GLuint> ids;          
+	std::map<std::string, GLuint> ids;         
+	std::string currentProgram = "program1";
+	std::string currentGeometry = "triangle";
+	int triangles = 3;
 };

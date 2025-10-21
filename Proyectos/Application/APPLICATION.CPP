@@ -1,54 +1,58 @@
 #include "Application.h"
 #include "ShaderFuncs.h"
 #include <GLFW/glfw3.h>
+#include <algorithm>
 
 void Application::setup()
 {
-	SetUpGeometria();
+	SetUpTriangle();
+	SetUpCube();
 	SetUpProgamaShaders();
 	SetUpProgamaCamera();
 	projection = glm::perspective(45.0f, 1024.0f / 768.0f, 0.1f, 100.0f);
+	glfwSetCursorPos(window, 0.0, 0.0);
+	glUseProgram(ids["program1"]);
 	glEnable(GL_DEPTH_TEST);
 }
 
 void Application::update()
 {
-	//time += 0.1f;
-	eye = glm::vec3(0.0f, 0.0f, 5.0f);
-	center = glm::vec3(0.0f, 0.0f, 0.0f);
-	camera = glm::lookAt(eye, center, glm::vec3(0.0f, 1.0f, 0.0f));
+	if(currentProgram == "program1") time += 0;
+	else if (currentProgram == "program2") {
+		eye = glm::vec3(0.0f, 0.0f, zPosCamera);
+		center = glm::vec3(0.0f, 0.0f, 0.0f);
+		camera = glm::lookAt(eye, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, (float)zOffset));
-	glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),glm::radians(xRot),glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),glm::radians(yRot),glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), glm::radians((float)yRot), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), glm::radians((float)xRot), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	model = rotateX * rotateY * translate * scale;
+		model = rotateX * rotateY * translate * scale;
+	}
 }
 
 void Application::draw()
 {
-	//selecciona programa de shaders
-	//glUseProgram(ids["program1"]);
-	glUseProgram(ids["program2"]);
+	glUseProgram(ids[currentProgram]);
 	//Pasa los parametros del programa. Los Asocia del cpu al gpu
-	glUniform1f(ids["time2"], time);
-	glUniformMatrix4fv(ids["model"], 1,GL_FALSE, &model[0][0]);
-	glUniformMatrix4fv(ids["camera"], 1,GL_FALSE, &camera[0][0]);
-	glUniformMatrix4fv(ids["projection"], 1,GL_FALSE, &projection[0][0]);
-	
+	glUniform1f(ids["time"], time);
+	glUniformMatrix4fv(ids["model"], 1, GL_FALSE, &model[0][0]);
+	glUniformMatrix4fv(ids["camera"], 1, GL_FALSE, &camera[0][0]);
+	glUniformMatrix4fv(ids["projection"], 1, GL_FALSE, &projection[0][0]);
+
 	glUniform1f(ids["xPos"], xPos);
 	glUniform1f(ids["yPos"], yPos);
 	glUniform1f(ids["xRot"], xRot);
 	glUniform1f(ids["yRot"], yRot);
-	//selecciona geometria (triangulo)
-	glBindVertexArray(ids["triangle"]);
+	//selecciona geometria (cubo)
+	glBindVertexArray(ids[currentGeometry]);
 
 	//gl_draw
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_TRIANGLES, 0, triangles);
 }
 
-void Application::SetUpGeometria()
+void Application::SetUpCube()
 {
 	std::vector<float> geometry{
 		//x      y     z     w
@@ -166,7 +170,7 @@ void Application::SetUpGeometria()
 	//crear vertex array object
 	GLuint VAO, VBO;
 	glGenVertexArrays(1, &VAO);
-	ids["triangle"] = VAO;
+	ids["cube"] = VAO;
 
 	glBindVertexArray(VAO);
 
@@ -192,13 +196,61 @@ void Application::SetUpGeometria()
 
 	std::cout << "setup" << std::endl;
 }
+void Application::SetUpTriangle()
+{
+	std::vector<float> geometry{
+		//x      y     z     w
+		// vertices
+		//v1 
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		//v2
+		-1.0f, -1.0f,  0.0f, 1.0f,
+		//v3
+		1.0f, -1.0f,  0.0f, 1.0f,
+		
+		//color v1	
+		1.0f, 1.0f, 0.0f, 1.0f,
+		//color v2
+		1.0f, 1.0f, 0.0f, 1.0f,
+		//color v3	
+		1.0f, 1.0f, 0.0f, 1.0f
+	};
+	//crear vertex array object
+	GLuint VAO, VBO;
+	glGenVertexArrays(1, &VAO);
+	ids["triangle"] = VAO;
+
+	glBindVertexArray(VAO);
+
+	//crear vertex buffer object de vertices
+	glGenBuffers(1, &VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	//PASA arreglo de vertices
+	glBufferData(GL_ARRAY_BUFFER,
+		sizeof(GLfloat) * geometry.size(), //calculo de tamaño en bytes
+		&geometry[0],
+		GL_STATIC_DRAW); //Manda la geometria al buffer
+
+	//glVertexAtrubvPointer sirve para decirle como va a leer la geometria
+	//para vertices
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+
+	//para color
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(12 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	std::cout << "setup" << std::endl;
+}
 
 void Application::SetUpProgamaShaders()
 {
 	std::string strVertexShader = leer_archivo_a_string("Shaders/VertexShader.glsl");
 	std::string strFragmentShader = leer_archivo_a_string("Shaders/FragmentShader.glsl");
 	ids["program1"] = ShaderFuncs::InitializeProgram(strVertexShader, strFragmentShader);
-	ids["time1"] = glGetUniformLocation(ids["program1"], "time");
+	ids["time"] = glGetUniformLocation(ids["program1"], "time");
 	ids["xPos"] = glGetUniformLocation(ids["program1"], "xPos");
 	ids["yPos"] = glGetUniformLocation(ids["program1"], "yPos");
 	ids["xRot"] = glGetUniformLocation(ids["program1"], "xRot");
@@ -208,18 +260,15 @@ void Application::SetUpProgamaCamera() {
 	std::string strVertexShader = leer_archivo_a_string("Shaders/VertexCamera.glsl");
 	std::string strFragmentShader = leer_archivo_a_string("Shaders/FragmentCamera.glsl");
 	ids["program2"] = ShaderFuncs::InitializeProgram(strVertexShader, strFragmentShader);
-	ids["time2"] = glGetUniformLocation(ids["program2"], "time");
 	ids["model"] = glGetUniformLocation(ids["program2"], "model");
 	ids["projection"] = glGetUniformLocation(ids["program2"], "projection");
 	ids["camera"] = glGetUniformLocation(ids["program2"], "camera");
-	ids["xPos"] = glGetUniformLocation(ids["program1"], "xPos");
-	ids["yPos"] = glGetUniformLocation(ids["program1"], "yPos");
-	ids["xRot"] = glGetUniformLocation(ids["program1"], "xRot");
-	ids["yRot"] = glGetUniformLocation(ids["program1"], "yRot");
+	ids["xPos"] = glGetUniformLocation(ids["program2"], "xPos");
+	ids["yPos"] = glGetUniformLocation(ids["program2"], "yPos");
+	ids["xRot"] = glGetUniformLocation(ids["program2"], "xRot");
+	ids["yRot"] = glGetUniformLocation(ids["program2"], "yRot");
 }
-void Application::SetUpCube()
-{
-}
+
 std::string Application::leer_archivo_a_string(const std::string& ruta_archivo) {
 	// 1. Abrir el archivo
 	// std::ios::in es para modo de entrada (lectura)
@@ -276,26 +325,30 @@ void Application::keyCallback(int key, int scancode, int action, int nods)
 	//RIGHT
 	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT)
 		xRot += 0.01f;
+
+	//shader change
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS) currentProgram = "program1";
+	if (key == GLFW_KEY_2 && action == GLFW_PRESS) currentProgram = "program2";
+	//geometry change
+	if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+		currentGeometry = "triangle";
+		triangles = 3;
+	}
+	if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+		currentGeometry = "cube";
+		triangles = 36;
+	}
 }
-double deltaX;
-double deltaY;
+
 void Application::cursorCallback(double xpos, double ypos)
 {
-	static double lastX = xpos;
-	static double lastY = ypos;
-
-	float sensitivity = 0.1f;
-
-	float deltaX = xpos - lastX;
-	float deltaY = ypos - lastY;
-
-	yRot += deltaX * sensitivity;
-	xRot += deltaY * sensitivity;
-
-	lastX = xpos;
-	lastY = ypos;
+	//yRot = ypos;
+	//xRot = xpos;
+	xRot = std::clamp((int)xpos, -180, 180);
+	yRot = std::clamp((int)ypos, -180, 180);
 }
-void Application::scrollCallback(double yoffset)
+void Application::scrollCallback(double pos)
 {
-	zOffset += yoffset * 0.5f; 
+	zPosCamera += pos * 0.5f; 
 }
+
