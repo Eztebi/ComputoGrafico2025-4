@@ -26,6 +26,25 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+
+typedef struct _SceneConstants
+{
+	DirectX::XMMATRIX model; //matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
+	DirectX::XMMATRIX view;//matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
+	DirectX::XMMATRIX projection;//matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
+
+	//192 bytes
+	
+	//parametros de matriz de vista
+	DirectX::XMVECTOR eye; //16 bytes
+	DirectX::XMVECTOR center; //16 bytes
+	DirectX::XMVECTOR up; //16 bytes
+	//48 bytes
+
+	float padding;
+	
+} SceneConstants;
+
 class Application
 {
 private:
@@ -42,6 +61,7 @@ private:
 	void setupRenderTargetView();
 	void setupSignature();
 	void swapBuffers();
+	void setUpConstantBuffer();
 	void setBlendState(D3D12_BLEND_DESC& blend_desc);
 	void setRasterizerState(D3D12_RASTERIZER_DESC& rasterizer_desc);
 	void setDepthStencilState(D3D12_DEPTH_STENCIL_DESC& depth_stencil_desc);
@@ -64,19 +84,15 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
 	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargets[BUFFER_COUNT];
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
+	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer;
 	
 	UINT frameIndex{0};
 	UINT rtvIncrementSize;
 
-	DirectX::XMMATRIX model;
-	DirectX::XMMATRIX view;
-	DirectX::XMMATRIX projection;
+	SceneConstants sceneConstants;
 
-	//parametros de matriz de vista
-	DirectX::XMVECTOR eye;
-	DirectX::XMVECTOR center;
-	DirectX::XMVECTOR up;
-	unsigned int triangle_angle = 0;
+	unsigned int triangle_angle =0;
+
 
 public:
 	const int WINDOW_WIDTH = 1024;
