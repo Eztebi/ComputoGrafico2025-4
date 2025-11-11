@@ -280,13 +280,13 @@ void Application::update()
 	sceneConstants.center = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f); //vista de la camara
 	sceneConstants.up= DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f); //vetor up
 
-	sceneConstants.view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(sceneConstants.eye, sceneConstants.center, sceneConstants.up));
+	sceneConstants.view = (DirectX::XMMatrixLookAtLH(sceneConstants.eye, sceneConstants.center, sceneConstants.up));
 
 	float aspect = static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT);
 	sceneConstants.projection = DirectX::XMMatrixIdentity();
 	//sceneConstants.projection = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60.f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000.f));
 	DirectX::XMVECTOR rotationAxis = (DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f));
-	sceneConstants.model = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationAxis(rotationAxis, DirectX::XMConvertToRadians(triangle_angle)));
+	sceneConstants.model = (DirectX::XMMatrixRotationAxis(rotationAxis, DirectX::XMConvertToRadians(triangle_angle)));
 	//sceneConstants.model = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(0.5f,0.5f,0.5f));
 
 	triangle_angle++;

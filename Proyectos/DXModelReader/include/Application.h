@@ -26,6 +26,16 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+struct Vertex {
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 normal;
+};
+
+struct Model {
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indicies;
+};
+
 
 typedef struct _SceneConstants
 {
