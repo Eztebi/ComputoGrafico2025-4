@@ -76,6 +76,7 @@ private:
 	void setBlendState(D3D12_BLEND_DESC& blend_desc);
 	void setRasterizerState(D3D12_RASTERIZER_DESC& rasterizer_desc);
 	void setDepthStencilState(D3D12_DEPTH_STENCIL_DESC& depth_stencil_desc);
+	Model load_model_from_obj(const std::string& path);
 
 
 	std::string readFile(const std::string& filename);
