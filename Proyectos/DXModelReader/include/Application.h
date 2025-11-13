@@ -104,9 +104,18 @@ private:
 	SceneConstants sceneConstants;
 
 	unsigned int triangle_angle =0;
+	UINT64 fence_value = 0;
 
 
 public:
+	Model model;
+	HRESULT hr;
+	//UINT h;
+	//ID3D12Device* device;
+	ID3D12Resource* vertex_buffer; //fast. GPU access only
+	ID3D12Resource* vertex_buffer_upload; //slow. CPU and GPU access
+	ID3D12Resource* index_buffer; //fast. GPU access only
+	ID3D12Resource* index_buffer_upload;
 	const int WINDOW_WIDTH = 1024;
 	const int WINDOW_HEIGHT = 768;
 	GLFWwindow* window;

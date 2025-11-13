@@ -167,16 +167,85 @@ HWND Application::GetWindowNativeHandler() const
 
 void Application::setupGeometry()
 {
-	std::vector<float> geometry{
-		// X    Y    Z     W
-		-1.0f,  1.0, 0.0f, 1.0f,  //vertice 1
-		-1.0f, -1.0, 0.0f, 1.0f,  //vertice 2
-		 1.0f, -1.0, 0.0f, 1.0f,  //vertice 3
+	model = load_model_from_obj("rabbit.obj");
+	vertex_buffer = nullptr; //fast. GPU access only
+	vertex_buffer_upload = nullptr; //slow. CPU and GPU access
+	index_buffer = nullptr; //fast. GPU access only
+	index_buffer_upload = nullptr; //slow. CPU and GPU access
 
-		1.0f, 0.0f, 0.0f, 1.0f,   //rojo
-		0.0f, 1.0f, 0.0f, 1.0f,   //verde
-		 0.0f, 0.0f, 1.0f, 1.0f   //azul
-	};
+	//heap properties
+	D3D12_HEAP_PROPERTIES heap_properties = {};
+	heap_properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	heap_properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heap_properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	heap_properties.CreationNodeMask = 1;
+	heap_properties.VisibleNodeMask = 1;
+
+	D3D12_HEAP_PROPERTIES heap_properties_upload = heap_properties;
+	heap_properties_upload.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+	//resource description
+	D3D12_RESOURCE_DESC resource_desc = {};
+	resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resource_desc.Alignment = 0;
+	resource_desc.Width = sizeof(Vertex) * model.vertices.size();
+	resource_desc.Height = 1;
+	resource_desc.DepthOrArraySize = 1;
+	resource_desc.MipLevels = 1;
+	resource_desc.Format = DXGI_FORMAT_UNKNOWN;
+	resource_desc.SampleDesc.Count = 1;
+	resource_desc.SampleDesc.Quality = 0;
+	resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	//vertex
+	hr = device->CreateCommittedResource(
+		&heap_properties,
+		D3D12_HEAP_FLAG_NONE,
+		&resource_desc,
+		D3D12_RESOURCE_STATE_COMMON,
+		nullptr,
+		IID_PPV_ARGS(&vertex_buffer)
+	);
+
+	hr = device->CreateCommittedResource(
+		&heap_properties_upload,
+		D3D12_HEAP_FLAG_NONE,
+		&resource_desc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&vertex_buffer_upload)
+	);
+
+	//index
+	resource_desc.Width = sizeof(unsigned int) * model.indicies.size();
+	hr = device->CreateCommittedResource(
+		&heap_properties,
+		D3D12_HEAP_FLAG_NONE,
+		&resource_desc,
+		D3D12_RESOURCE_STATE_COMMON,
+		nullptr,
+		IID_PPV_ARGS(&index_buffer)
+	);
+
+	hr = device->CreateCommittedResource(
+		&heap_properties_upload,
+		D3D12_HEAP_FLAG_NONE,
+		&resource_desc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&index_buffer_upload)
+	);
+	void* vertex_mapped_data = nullptr;
+	hr = vertex_buffer_upload->Map(0, nullptr, &vertex_mapped_data);
+	memcpy(vertex_mapped_data, model.vertices.data(), sizeof(Vertex) * model.vertices.size());
+	vertex_buffer_upload->Unmap(0, nullptr);
+
+	void* index_mapped_data = nullptr;
+	hr = index_buffer_upload->Map(0, nullptr, &index_mapped_data);
+	memcpy(index_mapped_data, model.indicies.data(), sizeof(unsigned int) * model.indicies.size());
+	index_buffer_upload->Unmap(0, nullptr);
+
 }
 
 void Application::keyCallback(int key, int scancode, int action, int mods)
@@ -236,6 +305,9 @@ void Application::setupDevice()
 			break;
 		}
 	}
+	device = nullptr;
+	hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+
 }
 
 void Application::setupCommandQueue()
@@ -352,19 +424,20 @@ void Application::update()
 	sceneConstants.center = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f); //vista de la camara
 	sceneConstants.up= DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f); //vetor up
 
-	sceneConstants.view = (DirectX::XMMatrixLookAtLH(sceneConstants.eye, sceneConstants.center, sceneConstants.up));
+	sceneConstants.view = DirectX::XMMatrixIdentity();//(DirectX::XMMatrixLookAtLH(sceneConstants.eye, sceneConstants.center, sceneConstants.up));
 
 	float aspect = static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT);
 	sceneConstants.projection = DirectX::XMMatrixIdentity();
 	//sceneConstants.projection = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60.f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000.f));
 	DirectX::XMVECTOR rotationAxis = (DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f));
-	sceneConstants.model = (DirectX::XMMatrixRotationAxis(rotationAxis, DirectX::XMConvertToRadians(triangle_angle)));
+	sceneConstants.model = DirectX::XMMatrixIdentity();//(DirectX::XMMatrixRotationAxis(rotationAxis, DirectX::XMConvertToRadians(triangle_angle)));
 	//sceneConstants.model = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(0.5f,0.5f,0.5f));
-
-	triangle_angle++;
+	sceneConstants.triangleAngle++;
 }
 void Application::setUpConstantBuffer()
 {
+	
+
 	D3D12_HEAP_PROPERTIES heapProps = {};
 	heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
 	heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -383,8 +456,17 @@ void Application::setUpConstantBuffer()
 
 	device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&constantBuffer));
 
-	ThrowIfFailed(constantBuffer->Map(0, nullptr, &mappedMemory), "fallo al copiar las constantes");
-	constantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mappedMemory));
+	ThrowIfFailed(constantBuffer.Get()->Map(0, nullptr, &mappedMemory), "fallo al copiar las constantes");
+	constantBuffer.Get()->Map(0, nullptr, reinterpret_cast<void**>(&mappedMemory));
+	/*void* vertex_mapped_data = nullptr;
+	hr = vertex_buffer_upload->Map(0, nullptr, &vertex_mapped_data);
+	memcpy(vertex_mapped_data, model.vertices.data(), sizeof(Vertex) * model.vertices.size());
+	vertex_buffer_upload->Unmap(0, nullptr);
+
+	void* index_mapped_data = nullptr;
+	hr = index_buffer_upload->Map(0, nullptr, &index_mapped_data);
+	memcpy(index_mapped_data, model.indicies.data(), sizeof(unsigned int) * model.indicies.size());
+	index_buffer_upload->Unmap(0, nullptr);*/
 }
 
 void Application::draw()
@@ -429,12 +511,25 @@ void Application::draw()
 	//COPIAR LOS DATOS DE LA ESTRUCTURA AL CONSTANT BUFFER
 	memcpy(mappedMemory, &sceneConstants, sizeof(SceneConstants));
 
-	commandList->SetGraphicsRootConstantBufferView(0, constantBuffer->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(0, constantBuffer.Get()->GetGPUVirtualAddress());
 
 	//constantBuffer->Unmap(0, nullptr);
 	//pass parametres
 	// Draw the triangle
-	commandList->DrawInstanced(3, 1, 0, 0);
+	//commandList->DrawInstanced(3, 1, 0, 0);
+	D3D12_VERTEX_BUFFER_VIEW vertex_buffer_view = {};
+	vertex_buffer_view.BufferLocation = vertex_buffer->GetGPUVirtualAddress();
+	vertex_buffer_view.StrideInBytes = sizeof(Vertex);
+	vertex_buffer_view.SizeInBytes = sizeof(Vertex) * model.vertices.size();
+	commandList->IASetVertexBuffers(0, 1, &vertex_buffer_view);
+
+	D3D12_INDEX_BUFFER_VIEW index_buffer_view = {};
+	index_buffer_view.BufferLocation = index_buffer->GetGPUVirtualAddress();
+	index_buffer_view.SizeInBytes = sizeof(unsigned int) * model.indicies.size();
+	index_buffer_view.Format = DXGI_FORMAT_R32_UINT;
+	commandList->IASetIndexBuffer(&index_buffer_view);
+
+	commandList->DrawIndexedInstanced(model.indicies.size(), 1, 0, 0, 0);
 
 	{
 		D3D12_RESOURCE_BARRIER barrier = {};
@@ -458,11 +553,11 @@ void Application::draw()
 
 void Application::setup()
 {
-	setupGeometry();
 	//Inicializa DirectX 12
 	// Crear el DXGI Factory		
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&factory)), "Error creating Factory");
 	setupDevice();
+	setupGeometry();
 	setupCommandQueue();
 	setupCommandAllocator();
 	setupCommandList();

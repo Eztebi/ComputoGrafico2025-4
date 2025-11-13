@@ -9,7 +9,17 @@ struct PSInput {
 };
 
 cbuffer cb0 : register(b0) {
+    float4x4 model;
+    float4x4 view;
+    float4x4 projection;
+    
+    float4 eye;
+    float4 center;
+    float4 up;
+
     uint angle;
+    
+    float3 padding;
 }
 
 // Vertex Shader
@@ -22,10 +32,8 @@ PSInput VSMain(VSInput input) {
     float sinTheta = sin(angle * rotation_speed);
     
     //position
-    float rotated_pos_x = input.position.x * cosTheta - input.position.z * sinTheta;
-    float rotated_pos_z = input.position.x * sinTheta + input.position.z * cosTheta;
-    output.position = float4(rotated_pos_x, input.position.y, rotated_pos_z, 1.0f);
-    output.position.z += 0.5f;
+    output.position = mul(projection, mul(view, mul(model, float4(input.position.xyz, 1.0f))));
+
     
     //normal
     float rotated_normal_x = input.normal.x * cosTheta - input.normal.z * sinTheta;
