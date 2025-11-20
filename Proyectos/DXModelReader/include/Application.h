@@ -89,7 +89,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain{};
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = {};
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
@@ -97,6 +97,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargets[BUFFER_COUNT];
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	
 	UINT frameIndex{0};
 	UINT rtvIncrementSize;
@@ -112,6 +113,7 @@ public:
 	HRESULT hr;
 	//UINT h;
 	//ID3D12Device* device;
+	HANDLE fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	ID3D12Resource* vertex_buffer; //fast. GPU access only
 	ID3D12Resource* vertex_buffer_upload; //slow. CPU and GPU access
 	ID3D12Resource* index_buffer; //fast. GPU access only

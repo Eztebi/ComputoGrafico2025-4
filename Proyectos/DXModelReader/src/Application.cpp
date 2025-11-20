@@ -173,78 +173,130 @@ void Application::setupGeometry()
 	index_buffer = nullptr; //fast. GPU access only
 	index_buffer_upload = nullptr; //slow. CPU and GPU access
 
-	//heap properties
-	D3D12_HEAP_PROPERTIES heap_properties = {};
-	heap_properties.Type = D3D12_HEAP_TYPE_DEFAULT;
-	heap_properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heap_properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	heap_properties.CreationNodeMask = 1;
-	heap_properties.VisibleNodeMask = 1;
+	//create vertex and index buffer
+	{
+		//heap properties
+		D3D12_HEAP_PROPERTIES heap_properties = {};
+		heap_properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+		heap_properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		heap_properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		heap_properties.CreationNodeMask = 1;
+		heap_properties.VisibleNodeMask = 1;
 
-	D3D12_HEAP_PROPERTIES heap_properties_upload = heap_properties;
-	heap_properties_upload.Type = D3D12_HEAP_TYPE_UPLOAD;
+		D3D12_HEAP_PROPERTIES heap_properties_upload = heap_properties;
+		heap_properties_upload.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-	//resource description
-	D3D12_RESOURCE_DESC resource_desc = {};
-	resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resource_desc.Alignment = 0;
-	resource_desc.Width = sizeof(Vertex) * model.vertices.size();
-	resource_desc.Height = 1;
-	resource_desc.DepthOrArraySize = 1;
-	resource_desc.MipLevels = 1;
-	resource_desc.Format = DXGI_FORMAT_UNKNOWN;
-	resource_desc.SampleDesc.Count = 1;
-	resource_desc.SampleDesc.Quality = 0;
-	resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		//resource description
+		D3D12_RESOURCE_DESC resource_desc = {};
+		resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		resource_desc.Alignment = 0;
+		resource_desc.Width = sizeof(Vertex) * model.vertices.size();
+		resource_desc.Height = 1;
+		resource_desc.DepthOrArraySize = 1;
+		resource_desc.MipLevels = 1;
+		resource_desc.Format = DXGI_FORMAT_UNKNOWN;
+		resource_desc.SampleDesc.Count = 1;
+		resource_desc.SampleDesc.Quality = 0;
+		resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	//vertex
-	hr = device->CreateCommittedResource(
-		&heap_properties,
-		D3D12_HEAP_FLAG_NONE,
-		&resource_desc,
-		D3D12_RESOURCE_STATE_COMMON,
-		nullptr,
-		IID_PPV_ARGS(&vertex_buffer)
-	);
+		//vertex
+		hr = device->CreateCommittedResource(
+			&heap_properties,
+			D3D12_HEAP_FLAG_NONE,
+			&resource_desc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			IID_PPV_ARGS(&vertex_buffer)
+		);
 
-	hr = device->CreateCommittedResource(
-		&heap_properties_upload,
-		D3D12_HEAP_FLAG_NONE,
-		&resource_desc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&vertex_buffer_upload)
-	);
+		hr = device->CreateCommittedResource(
+			&heap_properties_upload,
+			D3D12_HEAP_FLAG_NONE,
+			&resource_desc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&vertex_buffer_upload)
+		);
 
-	//index
-	resource_desc.Width = sizeof(unsigned int) * model.indicies.size();
-	hr = device->CreateCommittedResource(
-		&heap_properties,
-		D3D12_HEAP_FLAG_NONE,
-		&resource_desc,
-		D3D12_RESOURCE_STATE_COMMON,
-		nullptr,
-		IID_PPV_ARGS(&index_buffer)
-	);
+		//index
+		resource_desc.Width = sizeof(unsigned int) * model.indicies.size();
+		hr = device->CreateCommittedResource(
+			&heap_properties,
+			D3D12_HEAP_FLAG_NONE,
+			&resource_desc,
+			D3D12_RESOURCE_STATE_COMMON,
+			nullptr,
+			IID_PPV_ARGS(&index_buffer)
+		);
 
-	hr = device->CreateCommittedResource(
-		&heap_properties_upload,
-		D3D12_HEAP_FLAG_NONE,
-		&resource_desc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&index_buffer_upload)
-	);
-	void* vertex_mapped_data = nullptr;
-	hr = vertex_buffer_upload->Map(0, nullptr, &vertex_mapped_data);
-	memcpy(vertex_mapped_data, model.vertices.data(), sizeof(Vertex) * model.vertices.size());
-	vertex_buffer_upload->Unmap(0, nullptr);
+		hr = device->CreateCommittedResource(
+			&heap_properties_upload,
+			D3D12_HEAP_FLAG_NONE,
+			&resource_desc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&index_buffer_upload)
+		);
 
-	void* index_mapped_data = nullptr;
-	hr = index_buffer_upload->Map(0, nullptr, &index_mapped_data);
-	memcpy(index_mapped_data, model.indicies.data(), sizeof(unsigned int) * model.indicies.size());
-	index_buffer_upload->Unmap(0, nullptr);
+		//copy data from CPU to the upload buffers
+		void* vertex_mapped_data = nullptr;
+		hr = vertex_buffer_upload->Map(0, nullptr, &vertex_mapped_data);
+		memcpy(vertex_mapped_data, model.vertices.data(), sizeof(Vertex) * model.vertices.size());
+		vertex_buffer_upload->Unmap(0, nullptr);
+
+		void* index_mapped_data = nullptr;
+		hr = index_buffer_upload->Map(0, nullptr, &index_mapped_data);
+		memcpy(index_mapped_data, model.indicies.data(), sizeof(unsigned int) * model.indicies.size());
+		index_buffer_upload->Unmap(0, nullptr);
+
+		//Record commands to copy the data from the upload buffer to the fast default buffer
+		hr = commandAllocator->Reset();
+		hr = commandList->Reset(commandAllocator.Get(), nullptr);
+
+		D3D12_RESOURCE_BARRIER barrier[2] = {};
+		barrier[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier[0].Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier[0].Transition.pResource = vertex_buffer;
+		barrier[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+		barrier[0].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+		barrier[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+		barrier[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier[1].Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier[1].Transition.pResource = index_buffer;
+		barrier[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+		barrier[1].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+		barrier[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+		commandList->ResourceBarrier(2, barrier);
+
+		//copy the data from upload to the fast default buffer
+		commandList->CopyResource(vertex_buffer, vertex_buffer_upload);
+		commandList->CopyResource(index_buffer, index_buffer_upload);
+
+		barrier[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		barrier[0].Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+
+		barrier[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		barrier[1].Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+
+		commandList->ResourceBarrier(2, barrier);
+
+		hr = commandList->Close();
+
+		ID3D12CommandList* command_lists[] = { commandList.Get() };
+		commandQueue->ExecuteCommandLists(1, command_lists);
+
+		// Wait on the CPU for the GPU frame to finish
+		const UINT64 current_fence_value = ++fence_value;
+		hr = commandQueue->Signal(fence.Get(), current_fence_value);
+
+		if (fence->GetCompletedValue() < current_fence_value) {
+			hr = fence->SetEventOnCompletion(current_fence_value, fence_event);
+			WaitForSingleObject(fence_event, INFINITE);
+		}
+	}
 
 }
 
@@ -258,11 +310,10 @@ void Application::keyCallback(int key, int scancode, int action, int mods)
 
 void Application::setupShaders()
 {
-	//compile shaders
 	ID3DBlob* vertex_shader = nullptr;
 	ID3DBlob* pixel_shader = nullptr;
-	ThrowIfFailed(D3DCompileFromFile(L"Shaders/shader.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vertex_shader, nullptr), "Error compiling shader 1"); 
-	ThrowIfFailed(D3DCompileFromFile(L"Shaders/shader.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &pixel_shader, nullptr), "Error compiling shader 2"); 
+	hr = D3DCompileFromFile(L"shader.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vertex_shader, nullptr);
+	hr = D3DCompileFromFile(L"shader.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &pixel_shader, nullptr);
 
 	// Pipeline state
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc = {};
@@ -275,17 +326,25 @@ void Application::setupShaders()
 	pso_desc.SampleMask = UINT_MAX;
 	setRasterizerState(pso_desc.RasterizerState);
 	setDepthStencilState(pso_desc.DepthStencilState);
-	pso_desc.InputLayout.pInputElementDescs = nullptr;
-	pso_desc.InputLayout.NumElements = 0;
+
+	D3D12_INPUT_ELEMENT_DESC input_elements[] = {
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+	};
+
+	pso_desc.InputLayout.pInputElementDescs = input_elements;
+	pso_desc.InputLayout.NumElements = _countof(input_elements);
+
 	pso_desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 	pso_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	pso_desc.NumRenderTargets = 1;
 	pso_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	pso_desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	pso_desc.SampleDesc.Count = 1;
 	pso_desc.SampleDesc.Quality = 0;
 
 	pipelineState = nullptr;
-	ThrowIfFailed(device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(&pipelineState)), "Error creating pipeline)");
+	hr = device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(&pipelineState));
 
 	vertex_shader->Release();
 	vertex_shader = nullptr;
@@ -307,7 +366,7 @@ void Application::setupDevice()
 	}
 	device = nullptr;
 	hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
-
+	hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 }
 
 void Application::setupCommandQueue()
@@ -322,6 +381,8 @@ void Application::setupCommandQueue()
 void Application::setupSwapChain()
 {
 	//create swap chain
+	IDXGIFactory4* factory = nullptr;
+	hr = CreateDXGIFactory1(IID_PPV_ARGS(&factory));
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = 2;
 	swapChainDesc.BufferDesc.Width = WINDOW_WIDTH;
@@ -472,8 +533,8 @@ void Application::setUpConstantBuffer()
 void Application::draw()
 {
 	// Record commands to draw a triangle
-	UINT h = commandAllocator->Reset();
-	h = commandList->Reset(commandAllocator.Get(), nullptr);
+	ThrowIfFailed(commandAllocator->Reset(),"478");
+	ThrowIfFailed(commandList->Reset(commandAllocator.Get(), nullptr),"479");
 
 	UINT back_buffer_index = swapChain->GetCurrentBackBufferIndex();
 
@@ -517,6 +578,8 @@ void Application::draw()
 	//pass parametres
 	// Draw the triangle
 	//commandList->DrawInstanced(3, 1, 0, 0);
+	commandList->SetGraphicsRoot32BitConstant(0, triangle_angle, 0);
+
 	D3D12_VERTEX_BUFFER_VIEW vertex_buffer_view = {};
 	vertex_buffer_view.BufferLocation = vertex_buffer->GetGPUVirtualAddress();
 	vertex_buffer_view.StrideInBytes = sizeof(Vertex);
@@ -542,13 +605,23 @@ void Application::draw()
 		commandList->ResourceBarrier(1, &barrier);
 	}
 
-	h = commandList->Close();
+	ThrowIfFailed(commandList->Close(), " linea 550");
+	//h = commandList->Close();
 
 	ID3D12CommandList* commandLists[] = { commandList.Get()};
 	commandQueue->ExecuteCommandLists(1, commandLists);
 
-	h = swapChain->Present(1, 0);
+	ThrowIfFailed( swapChain->Present(1, 0), " linea 556");
 
+	const UINT64 current_fence_value = ++fence_value;
+	hr = commandQueue->Signal(fence.Get(), current_fence_value);
+
+	if (fence->GetCompletedValue() < current_fence_value) {
+		hr = fence->SetEventOnCompletion(current_fence_value, fence_event);
+		WaitForSingleObject(fence_event, INFINITE);
+	}
+
+	triangle_angle++;
 }
 
 void Application::setup()
@@ -557,7 +630,6 @@ void Application::setup()
 	// Crear el DXGI Factory		
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&factory)), "Error creating Factory");
 	setupDevice();
-	setupGeometry();
 	setupCommandQueue();
 	setupCommandAllocator();
 	setupCommandList();
@@ -567,4 +639,5 @@ void Application::setup()
 	setupSignature();
 	setupShaders();
 	setUpConstantBuffer();
+	setupGeometry();
 }
