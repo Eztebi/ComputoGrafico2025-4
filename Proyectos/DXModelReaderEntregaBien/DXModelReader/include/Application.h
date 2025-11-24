@@ -44,8 +44,11 @@ typedef struct
     DirectX::XMVECTOR eye;        // 16 bytes
     DirectX::XMVECTOR center;     // 16 bytes
     DirectX::XMVECTOR up;         // 16 bytes
-
+    
     UINT triangleAngle;           // 4 bytes
+    float xRot{ 0.0f };
+    float yRot{ 0.0f };
+    float zPosCamera = 10.f;
     float padding[3];             // padding a 16 bytes
 } SceneConstants;                 // 256 bytes (alineado para CBV)
 

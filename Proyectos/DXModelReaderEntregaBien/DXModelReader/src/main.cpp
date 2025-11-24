@@ -10,6 +10,7 @@ Application app;
 void MiCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     app.keyCallback(key, scancode, action, mods);
+   
 }
 
 int main(void)

@@ -18,6 +18,9 @@ cbuffer cb0 : register(b0) {
     float4 up; // 16 bytes
 
     uint angle; // 4 bytes
+    float xRot;
+    float yRot;
+    float zPosCamera = 10.f;
     float3 padding; // 12 bytes
 }
 
@@ -27,8 +30,10 @@ PSInput VSMain(VSInput input) {
     // Compute the rotation matrix
     float rotation_speed = 0.01f;
     
-    float cosTheta = cos(angle * rotation_speed);
-    float sinTheta = sin(angle * rotation_speed);
+    float cosThetaX = cos(xRot * rotation_speed);
+    float cosThetaY = cos(yRot * rotation_speed);
+    float sinThetaX = sin(xRot * rotation_speed);
+    float sinThetaY = sin(yRot * rotation_speed);
     
     //position
     float4 localPos = float4(input.position, 1.0f);

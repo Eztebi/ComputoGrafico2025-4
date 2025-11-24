@@ -435,7 +435,7 @@ void Application::update() {
 	sceneConstants.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), aspect, 0.1f, 1000.0f); // Proyección
 
 	// Modelo: rotación alrededor del eje Y sin angulo variable
-	XMVECTOR axis = XMVectorSet(xRot, yRot, 0.0f, 1.0f); // Eje Y
+	XMVECTOR axis = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f); // Eje Y
 	float angleRad = XMConvertToRadians((float)(sceneConstants.triangleAngle % 360)); // Ángulo en radianes
     sceneConstants.model = XMMatrixRotationAxis(axis,angleRad) * XMConvertToRadians(sceneConstants.triangleAngle);
 
