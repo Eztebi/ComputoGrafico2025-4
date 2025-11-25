@@ -11,7 +11,7 @@ void CursorCallback(GLFWwindow* window, double xpos, double ypos) {
     app.cursorCallback(xpos, ypos);
 }
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-    app.scrollCallback(yoffset); // solo nos interesa el eje Y del scroll
+    app.scrollCallback(yoffset); 
 }
 
 
