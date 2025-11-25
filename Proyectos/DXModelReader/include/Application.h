@@ -10,7 +10,6 @@
 #include <vector>
 #include <windows.h>
 
-
 // Librerías de DirectX 12
 #include <DirectXMath.h>
 #include <d3d12.h>
@@ -18,112 +17,121 @@
 #include <wrl/client.h> // Para Microsoft::WRL::ComPtr
 #include <d3dcompiler.h>
 
-
 #include <map>
 #include <string>
+#include <stdexcept>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
 struct Vertex {
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT3 normal;
+    DirectX::XMFLOAT3 position;
+    DirectX::XMFLOAT3 normal;
 };
 
 struct Model {
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indicies;
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indicies;
 };
 
-
-typedef struct _SceneConstants
+typedef struct
 {
-	DirectX::XMMATRIX model; //matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
-	DirectX::XMMATRIX view;//matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
-	DirectX::XMMATRIX projection;//matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
+    DirectX::XMMATRIX model;      // 64 bytes
+    DirectX::XMMATRIX view;       // 64 bytes
+    DirectX::XMMATRIX projection; // 64 bytes
 
-	//192 bytes
-	
-	//parametros de matriz de vista
-	DirectX::XMVECTOR eye; //16 bytes
-	DirectX::XMVECTOR center; //16 bytes
-	DirectX::XMVECTOR up; //16 bytes
-	//48 bytes
-	UINT triangleAngle;//4 bytes
-	//192+48+4
-	float padding[3];
-	
-} SceneConstants;
+    DirectX::XMVECTOR eye;        // 16 bytes
+    DirectX::XMVECTOR center;     // 16 bytes
+    DirectX::XMVECTOR up;         // 16 bytes
+
+    UINT triangleAngle;           // 4 bytes
+    float padding[3];             // padding a 16 bytes
+} SceneConstants;                 // 256 bytes (alineado para CBV)
 
 class Application
 {
 private:
-	void ThrowIfFailed(HRESULT hr, const std::string& msg);
-	void ThrowIfFailed(HRESULT hr);
-	void setupGeometry();
-	void setupShaders();
-	void setupDevice();
-	void setupCommandQueue();
-	void setupCommandAllocator();
-	void setupCommandList();
-	void setupSwapChain();
-	void setupDescriptorHeap();
-	void setupRenderTargetView();
-	void setupSignature();
-	void swapBuffers();
-	void setUpConstantBuffer();
-	void setBlendState(D3D12_BLEND_DESC& blend_desc);
-	void setRasterizerState(D3D12_RASTERIZER_DESC& rasterizer_desc);
-	void setDepthStencilState(D3D12_DEPTH_STENCIL_DESC& depth_stencil_desc);
-	Model load_model_from_obj(const std::string& path);
+    // Helpers de errores
+    void ThrowIfFailed(HRESULT hr, const std::string& msg);
+    void ThrowIfFailed(HRESULT hr);
 
+    // Etapas de setup
+    void setupGeometry();              // Carga el modelo y crea VB/IB
+    void setupShaders();               // Compila shaders y crea PSO
+    void setupConstantBuffer();        // Crea CBV (UPLOAD) y mapea
+    void setupDevice();                // Crea device
+    void setupCommandQueue();          // Crea CommandQueue
+    void setupCommandAllocator();      // Crea CommandAllocator
+    void setupCommandList();           // Crea CommandList
+    void setupSwapChain();             // Crea SwapChain
+    void setupDescriptorHeaps();       // Crea RTV y DSV heaps
+    void setupRenderTargetView();      // Crea RTVs de los back buffers
+    void setupDepthBuffer();           // Crea DepthBuffer + DSV
+    void setupSignature();             // Crea RootSignature (CBV b0)
+	void uploadStaticBuffers();        // Sube VB/IB a memoria GPU
+    void waitGPU();                    // Sincronización (Fence)
 
-	std::string readFile(const std::string& filename);
+    // Estados fijos
+    void setBlendState(D3D12_BLEND_DESC& blend_desc);
+    void setRasterizerState(D3D12_RASTERIZER_DESC& rasterizer_desc);
+    void setDepthStencilState(D3D12_DEPTH_STENCIL_DESC& depth_stencil_desc);
 
-	// --- Configuración y Constantes ---
-	static const UINT BUFFER_COUNT = 2; // Double buffering
+    // Utilidades
+    std::string readFile(const std::string& filename);
+    HWND GetWindowNativeHandler() const;
 
-	// --- Variables Globales de DX12 ---
-	Microsoft::WRL::ComPtr<IDXGIFactory4> factory;
+    Model load_model_from_obj(const std::string& path);
 
-	Microsoft::WRL::ComPtr<ID3D12Device> device;
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = {};
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
-	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargets[BUFFER_COUNT];
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
-	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer;
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
-	
-	UINT frameIndex{0};
-	UINT rtvIncrementSize;
-	void *mappedMemory;
-	SceneConstants sceneConstants;
+    static const UINT BUFFER_COUNT = 2; // Double buffering
 
-	unsigned int triangle_angle =0;
-	UINT64 fence_value = 0;
+    // --- DXGI / D3D12 ---
+    Microsoft::WRL::ComPtr<IDXGIFactory4> factory;
 
+    Microsoft::WRL::ComPtr<ID3D12Device> device;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
+    Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain{};
+
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> renderTargets[BUFFER_COUNT];
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
+    Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilBuffer;
+
+    UINT rtvIncrementSize = 0;
+    UINT dsvIncrementSize = 0;
+
+    // CBV
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer;
+    void* mappedMemory = nullptr;
+    SceneConstants sceneConstants{};
+
+    // VB / IB
+    Model modelData;
+    Microsoft::WRL::ComPtr<ID3D12Resource> vbDefault;
+    Microsoft::WRL::ComPtr<ID3D12Resource> vbUpload;
+    Microsoft::WRL::ComPtr<ID3D12Resource> ibDefault;
+    Microsoft::WRL::ComPtr<ID3D12Resource> ibUpload;
+    D3D12_VERTEX_BUFFER_VIEW vbv{};
+    D3D12_INDEX_BUFFER_VIEW  ibv{};
+
+    // Fence para sincronización
+    Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+    UINT64 fenceValue = 0;
+    HANDLE fenceEvent = nullptr;
 
 public:
-	Model model;
-	HRESULT hr;
-	//UINT h;
-	//ID3D12Device* device;
-	HANDLE fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-	ID3D12Resource* vertex_buffer; //fast. GPU access only
-	ID3D12Resource* vertex_buffer_upload; //slow. CPU and GPU access
-	ID3D12Resource* index_buffer; //fast. GPU access only
-	ID3D12Resource* index_buffer_upload;
-	const int WINDOW_WIDTH = 1024;
-	const int WINDOW_HEIGHT = 768;
-	GLFWwindow* window;
-	HWND GetWindowNativeHandler() const;
-	void setup();
-	void update();
-	void draw();
-	void keyCallback(int key, int scancode, int action, int mods);
+    const int WINDOW_WIDTH = 1024;
+    const int WINDOW_HEIGHT = 768;
+    GLFWwindow* window = nullptr;
+
+    void setup();
+    void update();
+    void draw();
+    void keyCallback(int key, int scancode, int action, int mods);
 };

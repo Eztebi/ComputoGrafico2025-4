@@ -3,23 +3,21 @@ struct PSInput {
     float3 color : COLOR;
 };
 
-cbuffer SceneConstants : register(b0)
-{
-    float4x4 model; //matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
-    float4x4 view; //matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
-    float4x4 projection; //matriz de 4x4 y cada flotante es de 4 bytes = 64 bytes en total
-
-	//192 bytes
-	
-	//parametros de matriz de vista
-    float4 eye; //16 bytes
-    float4 center; //16 bytes
-    float4 up; //16 bytes
-	//48 bytes
-    uint angle;
-    float3 padding;
+cbuffer SceneConstants : register(b0) {
     
-}
+    float4x4 model;
+    float4x4 view; 
+    float4x4 projection; 
+
+   float4 eye;
+   float4 center;
+   float4 up;
+    
+    uint angle;
+	
+    float3 padding; 
+};
+
 
 // Vertex Shader
 PSInput VSMain(unsigned int index : SV_VertexID) {
@@ -36,6 +34,8 @@ PSInput VSMain(unsigned int index : SV_VertexID) {
 	    float3(0.0f, 1.0f, 0.0f),
 	    float3(0.0f, 0.0f, 1.0f)
     };
+    float angle = 0;
+    
     float2 input_pos = positions[index];
     
     // Compute the rotation matrix
@@ -48,14 +48,15 @@ PSInput VSMain(unsigned int index : SV_VertexID) {
     rotated_pos.x = input_pos.x * cosTheta - input_pos.y * sinTheta;
     rotated_pos.y = input_pos.x * sinTheta + input_pos.y * cosTheta;
     
-    //float4 newPos;
-    //float4 localPos = float4(rotated_pos.xy, 0.0f, 1.0f);
-    //float4 worldPos = null(model, localPos);
-    //float4 viewPos = null(view, worldPos);
-    //float4 clipPos = null(projection, viewPos);
-    //float4x4 matriz = (projection, view,  model, 1.0f);
-    //output.position = float4(rotated_pos.xy,0.0f,1.0f);
-    output.position = mul(projection, mul(view, mul(model, float4(rotated_pos.xy,0.0f,1.0f))));
+    float4 localPos = float4(rotated_pos.xy, 0.0f, 1.0f);
+    float4 worldPos = mul(model, localPos);
+    //float4 viewPos = mul(view, worldPos);
+    //float4 clipPos = mul(projection, viewPos);
+    
+    
+    //Hacerlo con projection * view * model
+    //output.position = mul(projection, mul(view, mul(model, float4(rotated_pos.xy, 0.0f, 1.0f))));
+    output.position = localPos;
     output.color = colors[index];
     return output;
 }
