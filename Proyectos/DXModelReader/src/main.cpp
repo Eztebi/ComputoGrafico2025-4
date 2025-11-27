@@ -11,12 +11,12 @@ void MiCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     app.keyCallback(key, scancode, action, mods);
 }
-//void CursorCallback(GLFWwindow* window, double xpos, double ypos) {
-//    app.cursorCallback(xpos, ypos);
-//}
-//void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-//    app.scrollCallback(yoffset);
-//}
+void CursorCallback(GLFWwindow* window, double xpos, double ypos) {
+    app.cursorCallback(xpos, ypos);
+}
+void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    app.scrollCallback(yoffset);
+}
 
 int main(void)
 {
@@ -30,6 +30,8 @@ int main(void)
 
     glfwMakeContextCurrent(app.window);
     glfwSetKeyCallback(app.window, MiCallback);
+    glfwSetCursorPosCallback(app.window, CursorCallback);
+    glfwSetScrollCallback(app.window, ScrollCallback);
 
     app.setup();
 

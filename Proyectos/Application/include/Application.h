@@ -34,11 +34,11 @@ private:
 	float time{ 0.0f };
 	float xPos{ 0.0f };
 	float yPos{ 0.0f };
-	float xRot{ 0.0f };
-	float yRot{ 0.0f };
 	double xMouseRot{ 0.0f };
 	double yMouseRot{ 0.0f };
 	float zPosCamera = 10.f;
+	float xRot{ 0.0f };
+	float yRot{ 0.0f };
 	double xCursorPos = { 0.0f };
 	double yCursorPos = { 0.0f };
 

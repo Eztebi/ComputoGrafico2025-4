@@ -1,6 +1,7 @@
 #include "Application.h"
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace DirectX;
 
@@ -20,6 +21,18 @@ void Application::keyCallback(int key, int, int action, int) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
+void Application::cursorCallback(double xpos, double ypos)
+{
+    //yRot = ypos;
+    //xRot = xpos;
+    sceneConstants.xRot = std::clamp((int)xpos, -180, 180);
+    sceneConstants.yRot = std::clamp((int)ypos, -180, 180);
+}
+void Application::scrollCallback(double pos)
+{
+    sceneConstants.zPosCamera += pos * 0.5f;
+}
+
 
 void Application::setBlendState(D3D12_BLEND_DESC& d) {
     d = {};
@@ -416,7 +429,7 @@ void Application::setup() {
 
 void Application::update() {
     sceneConstants.triangleAngle++;
-    sceneConstants.eye = XMVectorSet(0.0f, 0.0f, -3.0f, 1.0f); // Posición de la cámara
+    sceneConstants.eye = XMVectorSet(0.0f, 0.0f, sceneConstants.zPosCamera, 1.0f); // Posición de la cámara
     sceneConstants.center = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);  // Punto al que mira
     sceneConstants.up = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f);    // Vector 'Up'
 
@@ -426,9 +439,12 @@ void Application::update() {
 	sceneConstants.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), aspect, 0.1f, 1000.0f); // Proyección
 
 	// Modelo: rotación alrededor del eje Y sin angulo variable
-	XMVECTOR axis = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f); // Eje Y
-	float angleRad = XMConvertToRadians((float)(sceneConstants.triangleAngle % 360)); // Ángulo en radianes
-    sceneConstants.model = XMMatrixRotationAxis(axis,angleRad) * XMConvertToRadians(sceneConstants.triangleAngle);
+	XMVECTOR axisY = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f); // Eje Y
+	XMVECTOR axisX = XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f); // Eje X
+	float angleRadY = XMConvertToRadians((float)(sceneConstants.triangleAngle % 360)); // Ángulo en radianes
+	float angleRadX = XMConvertToRadians((float)(sceneConstants.triangleAngle % 360)); // Ángulo en radianes
+    sceneConstants.model = XMMatrixRotationAxis(axisY,angleRadY) * XMConvertToRadians(sceneConstants.yRot);
+    sceneConstants.model = XMMatrixRotationAxis(axisX,angleRadX) * XMConvertToRadians(sceneConstants.xRot);
 
     memcpy(mappedMemory, &sceneConstants, sizeof(SceneConstants));// Sizeof es la cantidad de bits a copiar
 }

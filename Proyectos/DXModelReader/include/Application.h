@@ -45,7 +45,10 @@ typedef struct
     DirectX::XMVECTOR center;     // 16 bytes
     DirectX::XMVECTOR up;         // 16 bytes
 
-    UINT triangleAngle;           // 4 bytes
+    UINT triangleAngle; // 4 bytes
+    float zPosCamera; //= 10.f;
+    float xRot;//{ 0.0f };
+    float yRot; //{ 0.0f };
     float padding[3];             // padding a 16 bytes
 } SceneConstants;                 // 256 bytes (alineado para CBV)
 
@@ -129,7 +132,8 @@ public:
     const int WINDOW_WIDTH = 1024;
     const int WINDOW_HEIGHT = 768;
     GLFWwindow* window = nullptr;
-
+    void cursorCallback(double xpos, double ypos);
+    void scrollCallback(double yoffset);
     void setup();
     void update();
     void draw();
