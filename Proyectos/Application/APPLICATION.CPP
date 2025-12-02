@@ -50,6 +50,23 @@ void Application::draw()
 
 	//gl_draw
 	glDrawArrays(GL_TRIANGLES, 0, triangles);
+
+	//////////////codigo profe
+	eye = glm::vec3(0.0f, 0.0f, zPosCamera);
+	center = glm::vec3(0.0f, 0.0f, 0.0f);
+	camera = glm::lookAt(eye, center, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f));
+	glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), glm::radians((float)yRot), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), glm::radians((float)xRot), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	model = rotateX * rotateY * translate * scale;
+	glUniformMatrix4fv(ids["model"], 1, GL_FALSE, &model[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, triangles);
+
+
+
 }
 
 void Application::SetUpCube()
